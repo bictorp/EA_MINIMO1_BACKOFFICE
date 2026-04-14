@@ -1,0 +1,93 @@
+<div class="preguntas-container">
+  <!-- LISTA DE PREGUNTAS -->
+  <div *ngIf="!selectedPregunta" class="lista-view">
+    <div class="header">
+      <h2>FAQ Dinámico: Consultas</h2>
+      
+      <div class="search-bar">
+        <input 
+          type="text" 
+          [(ngModel)]="search" 
+          placeholder="Buscar preguntas..." 
+          (keyup.enter)="onSearch()"
+        />
+        <button (click)="onSearch()">Buscar</button>
+      </div>
+    </div>
+
+    <div class="loading" *ngIf="isLoading">Cargando preguntas...</div>
+
+    <div class="grid-preguntas" *ngIf="!isLoading">
+      <div class="card-pregunta" *ngFor="let p of preguntas" (click)="verDetalle(p)">
+        <h3>{{ p.titulo }}</h3>
+        <p class="desc-preview">{{ p.descripcion }}</p>
+        <div class="c-footer">
+          <span class="user-badge" *ngIf="p.usuario">
+            Por: {{ p.usuario.nombre }}
+          </span>
+          <span class="resp-count">{{ p.respuestas.length }} respuestas</span>
+        </div>
+      </div>
+      
+      <div *ngIf="preguntas.length === 0" class="no-results">
+        No se encontraron consultas.
+      </div>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1 && !isLoading">
+      <button (click)="prevPage()" [disabled]="page === 1">Anterior</button>
+      <span>Página {{ page }} de {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="page >= totalPages">Siguiente</button>
+    </div>
+  </div>
+
+  <!-- DETALLE DE PREGUNTA -->
+  <div *ngIf="selectedPregunta" class="detalle-view">
+    <button class="btn-back" (click)="volverAlListado()">⬅ Volver a las consultas</button>
+    
+    <div class="main-pregunta">
+      <h2>{{ selectedPregunta.titulo }}</h2>
+      <p class="autor" *ngIf="selectedPregunta.usuario">Preguntado por: <strong>{{ selectedPregunta.usuario.nombre }}</strong></p>
+      <div class="desc-box">
+        {{ selectedPregunta.descripcion }}
+      </div>
+    </div>
+
+    <div class="respuestas-section">
+      <h3>Respuestas ({{ selectedPregunta.respuestas.length }})</h3>
+      
+      <div class="lista-respuestas">
+        <div class="respuesta-item" *ngFor="let r of selectedPregunta.respuestas">
+          <div class="resp-header">
+            <strong>{{ r.usuario ? r.usuario.nombre : 'Usuario Anónimo' }}</strong> 
+            <span class="fecha">{{ r.fecha | date:'medium' }}</span>
+          </div>
+          <div class="resp-texto">
+            {{ r.texto }}
+          </div>
+        </div>
+        <div *ngIf="selectedPregunta.respuestas.length === 0" class="no-resp">
+          Aún no hay respuestas. ¡Sé el primero en contestar!
+        </div>
+      </div>
+
+      <div class="add-respuesta" *ngIf="currentUser">
+        <h4>Añadir respuesta</h4>
+        <div class="current-user-info">Respondiendo como: <strong>{{ currentUser.nombre }}</strong></div>
+        <textarea 
+          [(ngModel)]="nuevaRespuestaTexto" 
+          rows="4" 
+          placeholder="Escribe aquí tu respuesta...">
+        </textarea>
+        <button 
+          (click)="enviarRespuesta()" 
+          [disabled]="!nuevaRespuestaTexto.trim()">
+          Enviar Respuesta
+        </button>
+      </div>
+      <div *ngIf="!currentUser" class="no-auth">
+        No hay un usuario autenticado para responder.
+      </div>
+    </div>
+  </div>
+</div>
